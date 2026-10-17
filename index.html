@@ -596,6 +596,7 @@ const sfx={pick:()=>tone(700,.07,"triangle",.09),ok:c=>{bell(523*Math.pow(1.122,
   bad:()=>tone(200,.3,"sawtooth",.07,0,120),lamp:()=>[784,988,1175].forEach((f,i)=>bell(f,i*.12)),squeak:()=>{tone(1800,.08,"square",.05);tone(2300,.08,"square",.05,.08)},
   meow:()=>tone(700,.5,"triangle",.12,0,420),crash:()=>{tone(300,.2,"square",.08,0,90);tone(160,.3,"sawtooth",.06,.05,60)},power:()=>tone(440,.6,"sawtooth",.07,0,60),
   win:()=>{[523,659,784,1047,1319].forEach((f,i)=>bell(f,i*.14));[0,.2,.4,.55,.7].forEach(d=>dhol(d+.1))},lose:()=>[392,330,262].forEach((f,i)=>tone(f,.45,"triangle",.11,i*.22))};
+const track=(name,tries=0)=>{try{const g=window.goatcounter;if(g&&g.count){g.count({path:name,title:name,event:true})}else if(tries<8){setTimeout(()=>track(name,tries+1),1000)}}catch(_){}};
 const buzz=ms=>{if(S.vib)try{navigator.vibrate&&navigator.vibrate(ms)}catch(_){}};
 
 const cv=$("fx"),cx=cv.getContext("2d");let parts=[],raf=null;
@@ -639,7 +640,7 @@ function pickDolls(){
   return shuffle(out);
 }
 function start(kind,n){
-  audio();endTimers();cleanupDrag();R=runFor(kind,n);
+  audio();endTimers();cleanupDrag();R=runFor(kind,n);track(kind==="night"?`start-night-${n}`:`start-${kind}`);
   G={dolls:pickDolls(),placed:{},sel:null,score:0,combo:1,maxCombo:1,miss:0,hints:0,mice:0,shoo:0,hadPower:false,qAsked:0,qRight:0,usedQ:[],acc:0,runAt:Date.now(),playing:true};
   $("home").hidden=true;$("game").hidden=false;document.body.classList.add("ingame");document.body.classList.toggle("free",R.kind==="free");
   ["done","quiz","custom","settings","trophy"].forEach(id=>$(id).hidden=true);
@@ -847,6 +848,7 @@ function win(){
   if(R.kind==="night"){P.nights[R.night]=Math.max(P.nights[R.night]||0,stars);if(NIGHTS.every((_,i)=>P.nights[i+1]))earn.push("navaratri");if(NIGHTS.every((_,i)=>P.nights[i+1]===3))earn.push("allstars");finale=R.night===9}
   if(P.total>=10000)earn.push("tenk");
   const fresh=award(earn);saveAll();refreshHome();
+  track(R.kind==="night"?`win-night-${R.night}-${stars}star`:`win-${R.kind}`);if(fresh.includes("navaratri"))track("all-nine-nights-complete");
   const nm=S.name?esc(S.name):"beta";
   const sayTxt=finale?`Happy Dussehra, ${nm}! Nine nights done. I'm posting your golu in the society WhatsApp group right now.`
     :stars===3?`Ekdum perfect, ${nm}! Not one mistake. I'm telling everyone.`:stars===2?`Very nice, ${nm}. A few slips, but the guests will love it.`:`Done is done, ${nm}. Next time, fewer mistakes, hain?`;
@@ -856,14 +858,14 @@ function win(){
   sfx.win();rain(90);fireworks(finale?16:stars===3?8:4);
 }
 function lose(){
-  stopPlay();sfx.lose();buzz([100,60,100]);const placedN=Object.keys(G.placed).length,n=G.dolls.length,keep=Math.round(G.score/2);
+  stopPlay();sfx.lose();buzz([100,60,100]);track(R.kind==="night"?`lose-night-${R.night}`:`lose-${R.kind}`);const placedN=Object.keys(G.placed).length,n=G.dolls.length,keep=Math.round(G.score/2);
   P.total+=keep;P.games++;saveAll();refreshHome();
   showResult({stars:`<span class="off">★★★</span>`,title:"Guests are here!",say:`Ding dong! Only ${placedN} of ${n} dolls are up. Chalo, quickly try again.`,
     rows:[["Points so far",G.score],["Golu points kept (half)",keep,1]],fresh:[],next:false});
 }
 function finishFree(){
   if(!Object.keys(G.placed).length){say("Put at least one doll up first, beta.");return}
-  stopPlay();P.games++;P.total+=100;const fresh=award(["free"]);saveAll();refreshHome();
+  stopPlay();track("finish-free-play");P.games++;P.total+=100;const fresh=award(["free"]);saveAll();refreshHome();
   document.querySelectorAll(".padi").forEach(p=>p.classList.add("lit"));
   showResult({stars:"🪔",title:"So pretty!",say:`${S.name?esc(S.name):"Beta"}, you arranged ${Object.keys(G.placed).length} dolls your own way. Lovely taste.`,rows:[["Golu points for creating","100",1]],fresh,next:false});
   sfx.win();rain(80);fireworks(4);
@@ -955,5 +957,7 @@ refreshHome();
 if(location.hash==="#play")start("night",nextNight());
 </script>
 
+<!-- Visitor counter: https://golunights.goatcounter.com -->
+<script data-goatcounter="https://golunights.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
