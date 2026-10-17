@@ -141,7 +141,15 @@ body.free .placed{pointer-events:auto;cursor:pointer}
 .emo{filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
 .critter{position:absolute;left:-60px;font-size:30px;border:0;background:none;padding:6px;z-index:70;line-height:1;filter:drop-shadow(0 2px 3px #000)}
 .critter.run{animation:run 4.2s linear forwards}
-.critter.walk{animation:run 6s linear forwards;font-size:34px}
+.critter.cat{font-size:34px;transition:left 2.6s linear}
+.critter.cat.leave{transition:left 1s ease-in}
+.critter.cat.paw{animation:wobble .45s infinite}
+.critter .tag{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);background:#ff4d4d;color:#fff;font:800 .62rem/1.4 var(--body);padding:1px 7px;border-radius:999px;white-space:nowrap;animation:blink .6s infinite;filter:none}
+.placed.danger{animation:wobble .45s infinite;filter:drop-shadow(0 0 6px #ff4d4d)}
+.falling{position:fixed;z-index:96;pointer-events:none;display:grid;place-items:end center;line-height:1;transition:transform .85s cubic-bezier(.45,0,.9,.55),opacity .85s ease-in}
+.falling svg{width:100%;height:100%}
+.doll.back{animation:backflash 1.2s 2}
+@keyframes backflash{50%{border-color:#ff4d4d;background:#5a2030}}
 @keyframes run{to{left:calc(100% + 60px)}}
 .blackout{position:absolute;inset:0;z-index:65;pointer-events:none;opacity:0;transition:opacity .25s;
   background:radial-gradient(circle at var(--mx,50%) var(--my,60%),transparent 0 60px,rgba(5,0,10,.94) 130px)}
@@ -494,9 +502,9 @@ const NIGHTS=[
   {c:"Orange",hex:"#e0701a",steps:5,per:3,labels:1,cat:1,trivia:1,line:"Watch out, the neighbour's billi is roaming. Tap it to shoo it!"},
   {c:"White",hex:"#e9e4dc",ink:"dark",steps:5,per:3,labels:1,time:150,mouse:1,trivia:1,line:"Guests are coming early today. Jaldi jaldi!"},
   {c:"Red",hex:"#c8102e",steps:7,per:2,labels:1,cat:1,power:1,line:"Careful, the electricity in this building is not reliable."},
-  {c:"Royal blue",hex:"#2b4fb3",steps:7,per:3,labels:0,mouse:1,trivia:1,line:"No name tags tonight. Let's see what you really know."},
+  {c:"Royal blue",hex:"#2b4fb3",steps:7,per:3,labels:0,mouse:1,trivia:1,line:"Seven steps tonight and the mouse is back. Keep that combo going!",hideLine:"Grown-ups challenge: no name tags on the steps tonight. Let's see what you really know."},
   {c:"Pink",hex:"#d6457a",steps:9,per:2,labels:1,time:240,cat:1,power:1,line:"All nine steps, and the clock is ticking. Hai Ram."},
-  {c:"Purple",hex:"#6a2c91",steps:9,per:3,labels:0,time:330,mouse:1,cat:1,power:1,trivia:1,line:"The final night. Everything at once. Make me proud, beta!"}
+  {c:"Purple",hex:"#6a2c91",steps:9,per:3,labels:0,time:330,mouse:1,cat:1,power:1,trivia:1,line:"The final night. Everything at once. Make me proud, beta!",hideLine:"The final night: everything at once, and no name tags on the steps. Make me proud, beta!"}
 ];
 const CLOTHS={marigold:["#e8851c","#c95f12","#f6d365","rgba(255,250,235,.85)"],silk:["#9b1b30","#6e1022","#f2c14e","rgba(255,240,220,.8)"],peacock:["#0f6b7a","#7a1f7a","#f2c14e","rgba(255,255,255,.8)"],mehendi:["#5f7d2a","#3f5a1a","#f2c14e","rgba(255,255,240,.8)"]};
 const QUIZ={
@@ -504,18 +512,42 @@ const QUIZ={
     ["What dance do people do with sticks at Navaratri?",["Dandiya","Bhangra","Ballet","Breakdance"]],["Which festival burns a giant Ravana?",["Dussehra","Holi","Diwali","Christmas"]],
     ["Durga rides a…",["Lion","Horse","Camel","Bicycle"]],["The colourful pattern at the doorstep is called…",["Rangoli","Pizza","Graffiti","Origami"]],
     ["Who jumped across the sea to Lanka?",["Hanuman","Krishna","Narada","Garuda"]],["Who is Rama's wife?",["Sita","Radha","Lakshmi","Parvati"]],["What does Krishna play?",["Flute","Guitar","Tabla","Drums"]],
-    ["India's national bird is the…",["Peacock","Parrot","Crow","Eagle"]],["Which flower is in every festive garland?",["Marigold","Tulip","Cactus","Rose of Jericho"]]],
+    ["India's national bird is the…",["Peacock","Parrot","Crow","Eagle"]],["Which flower is in every festive garland?",["Marigold","Tulip","Cactus","Rose of Jericho"]],
+    ["Which god has four heads?",["Brahma","Shiva","Ganesha","Hanuman"]],["Krishna is usually shown with skin that is…",["Blue","Green","Orange","Purple"]],
+    ["Who is Ganesha's brother?",["Kartikeya","Hanuman","Rama","Krishna"]],["How many heads does Ravana have?",["Ten","Two","Five","Seven"]],
+    ["Lakshmi is usually shown sitting on a…",["Lotus","Tiger","Cloud","Rock"]],["Which sweet is Ganesha's favourite?",["Modak","Pizza","Cupcake","Ice cream"]],
+    ["Which bird carries Saraswati?",["Swan","Peacock","Owl","Parrot"]],["Which animal does Shiva ride?",["Bull","Lion","Mouse","Horse"]],
+    ["Burning Ravana at Dussehra shows that…",["Good wins over evil","Summer has started","It's a new year","It will rain"]],
+    ["Which festival of lights comes about three weeks after Dussehra?",["Diwali","Holi","Pongal","Christmas"]],
+    ["Who wrote down the Mahabharata while Vyasa spoke?",["Ganesha","Hanuman","Krishna","Narada"]],["Garuda is a giant…",["Eagle","Snake","Fish","Horse"]],
+    ["Which goddess plays the veena?",["Saraswati","Lakshmi","Durga","Parvati"]],["Hanuman's army was made of…",["Monkeys","Elephants","Horses","Robots"]],
+    ["Small clay lamps lit at festivals are called…",["Diyas","Kites","Bells","Drums"]],["Which bird does Lakshmi ride?",["Owl","Crow","Duck","Peacock"]]],
   adults:[["The tenth day after Navaratri is…",["Vijayadashami","Dhanteras","Makar Sankranti","Onam"]],["Golu steps are traditionally an ___ number.",["Odd","Even","Prime","Square"]],
     ["Which demon does Durga defeat?",["Mahishasura","Ravana","Kamsa","Hiranyakashipu"]],["Navaratri is celebrated as Durga Puja mainly in…",["West Bengal","Punjab","Goa","Kerala"]],
     ["Garba comes from which state?",["Gujarat","Rajasthan","Maharashtra","Assam"]],["The Mysuru Dasara elephant procession is called…",["Jamboo Savari","Rath Yatra","Pooram","Hornbill"]],
     ["In Karnataka, the doll display is called…",["Bombe Habba","Bommala Koluvu","Bathukamma","Pushkar"]],["Who wrote the Ramcharitmanas?",["Tulsidas","Valmiki","Kalidasa","Surdas"]],
     ["Which sage dictated the Mahabharata to Ganesha?",["Vyasa","Valmiki","Narada","Agastya"]],["Telangana's flower festival during Navaratri is…",["Bathukamma","Onam","Bihu","Pongal"]],
-    ["Ramlila acts out the story of…",["Rama","Krishna","Shiva","Buddha"]],["Durga Puja ends with the idol's…",["Visarjan","Coronation","Wedding","Birthday"]]]
+    ["Ramlila acts out the story of…",["Rama","Krishna","Shiva","Buddha"]],["Durga Puja ends with the idol's…",["Visarjan","Coronation","Wedding","Birthday"]],
+    ["Navaratri in autumn is called…",["Sharad Navaratri","Chaitra Navaratri","Magha Navaratri","Ashadha Navaratri"]],
+    ["The nine forms of Durga are together called…",["Navadurga","Navagraha","Navaratna","Navarasa"]],
+    ["The first day of Navaratri honours…",["Shailaputri","Siddhidatri","Mahagauri","Kalaratri"]],
+    ["The ninth form of Durga is…",["Siddhidatri","Shailaputri","Kushmanda","Skandamata"]],
+    ["Kullu Dussehra is celebrated in which state?",["Himachal Pradesh","Kerala","Odisha","Assam"]],
+    ["Which city is famous for Durga Puja pandal-hopping?",["Kolkata","Jaipur","Kochi","Shimla"]],
+    ["On the last day of Durga Puja, married women play…",["Sindoor Khela","Lathmar Holi","Dahi Handi","Jallikattu"]],
+    ["Which brother of Ravana joined Rama's side?",["Vibhishana","Kumbhakarna","Indrajit","Lakshmana"]],
+    ["Which brother of Ravana slept for six months at a time?",["Kumbhakarna","Vibhishana","Bharata","Shatrughna"]],
+    ["Garba is danced in circles around a…",["Clay lamp (garbo)","Bonfire","Banyan tree","Stage"]],
+    ["Ayudha Puja, near the end of Navaratri, honours…",["Tools and weapons","Ancestors","Rivers","Teachers"]],
+    ["Bathukamma is a stack made of…",["Flowers","Clay pots","Rice","Coconuts"]],
+    ["\"Vijayadashami\" means…",["Tenth day of victory","Night of lamps","Day of colours","First harvest"]],
+    ["Durga was created from the combined power of…",["All the gods","The sun","The ocean","The sages"]],
+    ["Mysuru Dasara grew from a royal festival of the…",["Wodeyars","Mughals","Cholas","Marathas"]]]
 };
 const BADGES=[["firstwin","🪔","First night","Win any night."],["perfect","⭐","Ekdum perfect","Win with no mistakes or hints."],["combo","🔥","On fire","Reach a ×8 combo."],
   ["mouse","🐭","Mouse catcher","Catch Ganesha's mouse."],["shoo","🐈","Shoo billi","Shoo away the cat."],["power","🔦","Light aa gayi","Win a night that had a power cut."],
   ["guru","📿","Quiz champion","Answer every trivia right in a win (2+)."],["speedy","⚡","Speedy setup","Win in under 4 seconds a doll."],["nine","🏛️","Nine steps","Win on 9 steps."],
-  ["nolabel","🎯","No name tags","Win with step names hidden."],["clock","⏳","Beat the guests","Win with a time limit."],["maker","🎨","Doll maker","Make your own doll."],
+  ["nolabel","🎯","No name tags","Win a night with step names hidden (Grown-up mode)."],["clock","⏳","Beat the guests","Win with a time limit."],["maker","🎨","Doll maker","Make your own doll."],
   ["free","🌸","Free spirit","Finish a free-play golu."],["navaratri","🎆","Navaratri complete","Win all nine nights."],["allstars","🌟","27 stars","Get 3 stars on every night."],["tenk","🏆","10,000 club","Collect 10,000 golu points."]];
 const LEVELS=[[0,"Golu newbie"],[1000,"Doll helper"],[3000,"Step setter"],[7000,"Golu pro"],[12000,"Society champion"],[20000,"Golu legend"]];
 const LINES={
@@ -533,7 +565,7 @@ const CDEF={steps:5,per:3,time:0,mouse:true,cat:true,power:false,trivia:true,lab
 let S=Object.assign({name:"",who:"kids",sound:true,vib:true},load("gn-settings",{}));
 S.custom=Object.assign({},CDEF,S.custom||{});
 let MINE=load("gn-mine",[]);
-let P=Object.assign({total:0,games:0,wins:0,nights:{},badges:{}},load("gn-progress",{}));
+let P=Object.assign({total:0,games:0,wins:0,nights:{},badges:{},qseen:{}},load("gn-progress",{}));P.qseen=P.qseen||{};
 const saveAll=()=>{save("gn-settings",S);save("gn-progress",P);save("gn-mine",MINE)};
 
 const $=id=>document.getElementById(id);
@@ -594,8 +626,8 @@ function pause(){if(G&&G.runAt){G.acc+=Date.now()-G.runAt;G.runAt=0}}
 function resume(){if(G&&G.playing&&!G.runAt)G.runAt=Date.now()}
 
 function runFor(kind,n){
-  if(kind==="night"){const N=NIGHTS[n-1];return{kind,night:n,steps:N.steps,per:N.per,time:N.time?Math.round(N.time*(S.who==="kids"?1.5:1)):0,labels:!!N.labels,mouse:!!N.mouse,cat:!!N.cat,power:!!N.power,trivia:!!N.trivia,hints:true,
-    cloth:[N.hex,shadeHex(N.hex,-.28),"#f2c14e",N.ink==="dark"?"rgba(40,20,30,.7)":"rgba(255,255,255,.8)"],title:`Night ${n} · ${N.c}`,hex:N.hex,line:N.line,off:[]}}
+  if(kind==="night"){const N=NIGHTS[n-1];return{kind,night:n,steps:N.steps,per:N.per,time:N.time?Math.round(N.time*(S.who==="kids"?1.5:1)):0,labels:!!N.labels||S.who==="kids",mouse:!!N.mouse,cat:!!N.cat,power:!!N.power,trivia:!!N.trivia,hints:true,
+    cloth:[N.hex,shadeHex(N.hex,-.28),"#f2c14e",N.ink==="dark"?"rgba(40,20,30,.7)":"rgba(255,255,255,.8)"],title:`Night ${n} · ${N.c}`,hex:N.hex,line:(!N.labels&&S.who!=="kids"&&N.hideLine)?N.hideLine:N.line,off:[]}}
   const C=S.custom;const cl=C.cloth==="mine"?[C.cA,C.cB,C.cZ,"rgba(255,255,255,.85)"]:CLOTHS[C.cloth];
   if(kind==="free")return{kind,steps:C.steps,per:C.per,time:0,labels:true,cloth:cl,title:"Free play",hex:cl[0],off:C.off,line:"Free play! Arrange it your way. Tap a placed doll to put it back."};
   return{kind,steps:C.steps,per:C.per,time:C.time?Math.round(C.time*(S.who==="kids"?1.5:1)):0,labels:C.labels,mouse:C.mouse,cat:C.cat,power:C.power,trivia:C.trivia,hints:C.hints,cloth:cl,title:"Custom game",hex:cl[0],off:C.off,line:"Your rules, beta. Let's see the result."};
@@ -630,7 +662,7 @@ function buildStairs(){
     const b=document.createElement("button");b.type="button";b.className="padi";b.dataset.step=i;
     b.style.setProperty("--w",(46+(n-i)*(54/(n-1)))+"%");b.style.setProperty("--z",10+(n-i));
     b.style.setProperty("--cloth",i%2?"var(--clothA)":"var(--clothB)");
-    const name=R.labels?groupLabel(groups()[i-1]):`Step ${i}`;
+    const name=R.labels?groupLabel(groups()[i-1]):"? name hidden ?";
     b.setAttribute("aria-label",`Step ${i}: ${name}`);
     b.innerHTML=`<div class="lip"></div><div class="face"><span class="num">${i}</span><span class="label">${name}</span><span class="dipa"></span></div><div class="row"></div>`;
     b.addEventListener("click",ev=>{if(G&&G.sel)place(i,ev.clientX||innerWidth/2,ev.clientY||innerHeight/2)});
@@ -663,7 +695,7 @@ function hud(){$("score").textContent=G.score.toLocaleString();$("comboBar").sty
 function updTime(){if(!G)return;const t=elapsed();
   if(R.time){const r=R.time-t;$("timeLbl").textContent="Guests in";$("time").textContent=fmt(r);$("time").className=r<=20?"low":"";if(r<=0&&G.playing)lose()}
   else{$("timeLbl").textContent="Time";$("time").textContent=fmt(t);$("time").className=""}}
-function say(main,cls="",small=""){const b=$("gSay");b.innerHTML=main+(small?`<small>${small}</small>`:"");b.className="bubble "+cls;const a=$("gAunty");a.classList.remove("talk");void a.offsetWidth;a.classList.add("talk")}
+function say(main,cls="",small=""){const b=$("gSay");b.innerHTML=`<span>${main}</span>`+(small?`<small>${small}</small>`:"");b.className="bubble "+cls;const a=$("gAunty");a.classList.remove("talk");void a.offsetWidth;a.classList.add("talk")}
 
 function select(id){if(!G.playing)return;sfx.pick();G.sel=G.sel===id?null:id;renderTray();
   if(G.sel){const d=G.dolls.find(x=>x.id===G.sel);say(`Where does <b>${esc(d.name)}</b> go?`,"","Tap the step, or drag the doll up next time.")}}
@@ -743,14 +775,28 @@ function runCat(){
   if(!G||!G.playing)return;if(!$("quiz").hidden){later(runCat,3000);return}
   const st=$("stairs"),pads=[...st.querySelectorAll(".padi")].filter(p=>p.querySelector(".placed"));
   if(!pads.length){later(runCat,5000);return}
-  const pad=rand(pads),c=document.createElement("button");c.type="button";c.className="critter walk";c.textContent="🐈";c.setAttribute("aria-label","Shoo the cat");
-  c.style.top=Math.max(0,pad.offsetTop-14)+"px";st.appendChild(c);sfx.meow();say("Billi alert! Tap the cat before it knocks something!","bad");
+  const pad=rand(pads),figs=[...pad.querySelectorAll(".placed")],f=rand(figs),id=f.dataset.id,d=G.dolls.find(z=>z.id===id);
+  const sr=st.getBoundingClientRect(),fr=f.getBoundingClientRect();
+  const c=document.createElement("button");c.type="button";c.className="critter cat";c.innerHTML='🐈<span class="tag">Tap me!</span>';c.setAttribute("aria-label","Shoo the cat");
+  c.style.left="-60px";c.style.top=Math.max(0,fr.top-sr.top+fr.height-46)+"px";st.appendChild(c);
+  sfx.meow();say(`Billi alert! The cat is going for <b>${esc(d.name)}</b>!`,"bad","Tap the cat to shoo it before it knocks the doll off.");
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{c.style.left=Math.max(0,fr.left-sr.left-30)+"px"}));
   let gone=false;
-  c.addEventListener("click",ev=>{ev.stopPropagation();if(gone)return;gone=true;G.score+=200;G.shoo++;hud();sfx.squeak();floatText(ev.clientX,ev.clientY,"+200 shoo!");say("Shoo shoo! Good reflexes, beta.","good","+200 for saving the golu.");c.remove()});
-  later(()=>{if(gone||!G.playing)return;const figs=[...pad.querySelectorAll(".placed")];if(!figs.length)return;const f=rand(figs),id=f.dataset.id,d=G.dolls.find(z=>z.id===id);
-    delete G.placed[id];f.remove();pad.classList.remove("lit");G.combo=1;hud();renderTray();sfx.crash();quake();buzz([60,40,60]);
-    say(`Oho! The cat knocked <b>${esc(d.name)}</b> back into the box.`,"bad","Put it back on its step.")},2900);
-  later(()=>c.remove(),6100);later(runCat,16000+Math.random()*10000);
+  const leave=()=>{c.classList.remove("paw");c.classList.add("leave");c.style.left=(sr.width+60)+"px";setTimeout(()=>c.remove(),1000)};
+  c.addEventListener("click",ev=>{ev.stopPropagation();if(gone)return;gone=true;f.classList.remove("danger");G.score+=200;G.shoo++;hud();sfx.squeak();
+    floatText(ev.clientX,ev.clientY,"+200 shoo!");burst(ev.clientX,ev.clientY,14);say("Shoo shoo! Good reflexes, beta.","good",`${esc(d.name)} is safe. +200`);leave()});
+  // arrives, then paws at the doll for a while: plenty of warning
+  later(()=>{if(gone||!G.playing)return;c.classList.add("paw");f.classList.add("danger");sfx.meow()},2600);
+  later(()=>{if(gone||!G.playing||!f.isConnected)return;gone=true;
+    const r=f.getBoundingClientRect(),tr=$("tray").getBoundingClientRect(),ghost=document.createElement("div");
+    ghost.className="falling";ghost.innerHTML=d.fig;Object.assign(ghost.style,{left:r.left+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px",fontSize:getComputedStyle(f).fontSize});
+    document.body.appendChild(ghost);
+    delete G.placed[id];f.remove();pad.classList.remove("lit");G.combo=1;hud();
+    requestAnimationFrame(()=>{ghost.style.transform=`translate(${(tr.left+30-r.left)}px,${(tr.top-r.top)}px) rotate(200deg) scale(.7)`;ghost.style.opacity=".2"});
+    setTimeout(()=>{ghost.remove();renderTray();const b=$("tray").querySelector(`.doll[data-id="${id}"]`);if(b){b.classList.add("back");b.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"})}},850);
+    sfx.crash();quake();buzz([60,40,60]);leave();
+    say(`Oho! The cat knocked <b>${esc(d.name)}</b> off the step.`,"bad","It's back in the doll box. Put it on its step again.")},5600);
+  later(runCat,22000+Math.random()*12000);
 }
 function torch(x,y){const r=$("scene").getBoundingClientRect();$("scene").style.setProperty("--mx",(x-r.left)+"px");$("scene").style.setProperty("--my",(y-r.top)+"px")}
 $("scene").addEventListener("pointermove",e=>torch(e.clientX,e.clientY));
@@ -764,8 +810,12 @@ function powerCut(){
 
 /* trivia */
 function askQuiz(){
-  if(!G||!G.playing)return;const bank=QUIZ[S.who].map((q,i)=>[q,i]).filter(([,i])=>!G.usedQ.includes(i));if(!bank.length)return;
-  const [q,i]=rand(bank);G.usedQ.push(i);G.qAsked++;pause();cleanupDrag();
+  if(!G||!G.playing)return;
+  // deck of questions: every question is asked once before any repeats, across games
+  let seen=P.qseen[S.who]||[];let bank=QUIZ[S.who].map((q,i)=>[q,i]).filter(([,i])=>!seen.includes(i)&&!G.usedQ.includes(i));
+  if(!bank.length){seen=[];bank=QUIZ[S.who].map((q,i)=>[q,i]).filter(([,i])=>!G.usedQ.includes(i))}
+  if(!bank.length)return;
+  const [q,i]=rand(bank);G.usedQ.push(i);P.qseen[S.who]=seen.concat(i);saveAll();G.qAsked++;pause();cleanupDrag();
   $("qText").textContent=q[0];$("qNote").textContent="";$("qNext").hidden=true;const box=$("qOpts");box.innerHTML="";
   shuffle(q[1].map((t,k)=>({t,ok:k===0}))).forEach(o=>{const b=document.createElement("button");b.type="button";b.textContent=o.t;b.dataset.ok=o.ok?"1":"";
     b.addEventListener("click",()=>{box.querySelectorAll("button").forEach(x=>{x.disabled=true;if(x.dataset.ok)x.classList.add("right")});
@@ -849,13 +899,13 @@ $("dHome").addEventListener("click",goHome);$("dReplay").addEventListener("click
 let T={};
 function segBind(id,obj,key,cb){$(id).querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{const v=isNaN(+b.dataset.v)?b.dataset.v:+b.dataset.v;obj()[key]=v;segShow(id,v);sfx.pick();cb&&cb()}))}
 function segShow(id,v){$(id).querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v)===String(v)?"true":"false"))}
-const whoNote=()=>$("whoNote").textContent=T.who==="kids"?"Kids: no points lost for mistakes, extra time, friendly hints and easier trivia.":"Grown-ups: mistakes cost 25, hints cost 50, less time and tougher trivia.";
+const whoNote=()=>$("whoNote").textContent=T.who==="kids"?"Kids: no points lost for mistakes, extra time, friendly hints and easier trivia.":"Grown-ups: mistakes cost 25, hints cost 50, less time, tougher trivia, and no step names on Nights 7 and 9.";
 let arm=false;
 $("openSettings").addEventListener("click",()=>{T={who:S.who};$("sName").value=S.name;segShow("sWho",S.who);whoNote();$("sSound").checked=S.sound;$("sVib").checked=S.vib;arm=false;$("resetProg").textContent="Reset all progress";$("settings").hidden=false});
 segBind("sWho",()=>T,"who",whoNote);
 $("sSave").addEventListener("click",()=>{S.name=$("sName").value.trim();S.who=T.who;S.sound=$("sSound").checked;S.vib=$("sVib").checked;saveAll();refreshHome();$("settings").hidden=true});
 $("resetProg").addEventListener("click",()=>{if(!arm){arm=true;$("resetProg").textContent="Tap again to erase stars, points and trophies";return}
-  P={total:0,games:0,wins:0,nights:{},badges:{}};saveAll();refreshHome();arm=false;$("resetProg").textContent="Progress erased"});
+  P={total:0,games:0,wins:0,nights:{},badges:{},qseen:{}};saveAll();refreshHome();arm=false;$("resetProg").textContent="Progress erased"});
 
 /* custom */
 let C={};
